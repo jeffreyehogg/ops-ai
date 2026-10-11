@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OpsAI.Api/OpsAI.Api.csproj" />
+    <Project Path="src/OpsAI.Core/OpsAI.Core.csproj" />
+    <Project Path="src/OpsAI.Infrastructure/OpsAI.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpsAI.Tests/OpsAI.Tests.csproj" />
+  </Folder>
+</Solution>
