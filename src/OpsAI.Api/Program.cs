@@ -41,6 +41,24 @@ builder.Services.AddHostedService<IncidentProcessingWorker>();
 
 var app = builder.Build();
 
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+        var ex = exceptionHandlerPathFeature?.Error;
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = "InternalServerError",
+            message = ex?.Message,
+            details = ex?.InnerException?.Message,
+            type = ex?.GetType().Name
+        });
+    });
+});
+
 // Ensure Database is Created
 using (var scope = app.Services.CreateScope())
 {
@@ -58,8 +76,8 @@ app.MapScalarApiReference(options =>
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 });
 
-// Root Redirect to Scalar UI
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+// Root Redirect to Scalar UI (supports both GET and HEAD)
+app.MapMethods("/", ["GET", "HEAD"], () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 
 // Health Check Endpoints
 app.MapHealthChecks("/healthz").WithTags("Health").WithSummary("Liveness probe endpoint");

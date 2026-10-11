@@ -5,7 +5,12 @@ public sealed class AIConfiguration
     public const string SectionName = "AI";
 
     public string Provider { get; set; } = "Gemini";
-    public string? ApiKey { get; set; }
+    private string? _apiKey;
+    public string? ApiKey
+    {
+        get => _apiKey?.Trim().Trim('"', '\'');
+        set => _apiKey = value;
+    }
     public string ModelId { get; set; } = "gemini-2.0-flash";
     public string? Endpoint { get; set; }
     public int TimeoutSeconds { get; set; } = 30;

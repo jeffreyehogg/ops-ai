@@ -27,6 +27,8 @@ RUN dotnet publish src/OpsAI.Api/OpsAI.Api.csproj -c Release -o /app/publish --n
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
+RUN mkdir -p /app/data && chown -R app:app /app
+
 # Non-root security user
 USER app
 

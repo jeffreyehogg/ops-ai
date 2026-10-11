@@ -19,13 +19,19 @@ public static class DependencyInjection
         services.Configure<WebhookConfiguration>(configuration.GetSection(WebhookConfiguration.SectionName));
 
         // Configure Database (PostgreSQL if connection string provided, fallback to SQLite for local dev)
-        var postgresConnection = configuration.GetConnectionString("PostgresConnection");
-        if (string.IsNullOrWhiteSpace(postgresConnection))
-        {
-            postgresConnection = configuration["DATABASE_URL"] ?? configuration["POSTGRES_URL"];
-        }
+        var postgresConnection = configuration.GetConnectionString("PostgresConnection")
+            ?? configuration["ConnectionStrings:PostgresConnection"]
+            ?? configuration["ConnectionStrings__PostgresConnection"]
+            ?? configuration["DATABASE_URL"]
+            ?? configuration["POSTGRES_URL"]
+            ?? configuration["POSTGRESQL_URL"];
 
-        var sqliteConnection = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=opsai.db";
+        var sqliteConnection = configuration.GetConnectionString("SqliteConnection");
+        if (string.IsNullOrWhiteSpace(sqliteConnection))
+        {
+            var isContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+            sqliteConnection = isContainer ? "Data Source=/tmp/opsai.db" : "Data Source=opsai.db";
+        }
 
         services.AddDbContext<OpsAIDbContext>(options =>
         {
@@ -59,6 +65,8 @@ public static class DependencyInjection
 
     private static string NormalizePostgresConnectionString(string connection)
     {
+        connection = connection.Trim().Trim('"', '\'');
+
         if (connection.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
             connection.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
         {
