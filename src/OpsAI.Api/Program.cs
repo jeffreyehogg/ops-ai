@@ -10,6 +10,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Dynamic Port binding for Render / Cloud Run environments
+var envPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(envPort))
+{
+    builder.WebHost.UseUrls($"http://+:{envPort}");
+}
+
 // Structured Logging via Serilog
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)

@@ -1,7 +1,7 @@
 # Multi-Stage Production Dockerfile for OpsAI
 
 # Stage 1: Build & Publish
-FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy solution and project definitions for optimized layer caching
@@ -24,7 +24,7 @@ RUN dotnet test tests/OpsAI.Tests/OpsAI.Tests.csproj -c Release --no-restore
 RUN dotnet publish src/OpsAI.Api/OpsAI.Api.csproj -c Release -o /app/publish --no-restore
 
 # Stage 2: Minimal Distroless / Hardened Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Non-root security user
