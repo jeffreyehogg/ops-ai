@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpsAI.Api.Endpoints;
@@ -17,6 +18,25 @@ if (!string.IsNullOrWhiteSpace(envPort))
 {
     builder.WebHost.UseUrls($"http://+:{envPort}");
 }
+
+// Forwarded Headers for Reverse Proxy SSL termination (Render, Cloudflare)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Permissive CORS Policy for Interactive API documentation & web clients
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Structured Logging via Serilog
 builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -41,6 +61,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHostedService<IncidentProcessingWorker>();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
+app.UseCors();
 
 app.UseExceptionHandler(errorApp =>
 {
