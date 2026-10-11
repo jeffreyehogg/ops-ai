@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using OpsAI.Api.Endpoints;
 using OpsAI.Api.Workers;
 using OpsAI.Core.Validation;
@@ -59,11 +60,27 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// Ensure Database is Created
+// Ensure Database and Schema are Created
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<OpsAIDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    if (db.Database.IsNpgsql())
+    {
+        await db.Database.ExecuteSqlRawAsync("CREATE SCHEMA IF NOT EXISTS opsai;");
+        var creator = db.Database.GetService<Microsoft.EntityFrameworkCore.Storage.IRelationalDatabaseCreator>();
+        try
+        {
+            await creator.CreateTablesAsync();
+        }
+        catch
+        {
+            // Tables already created in opsai schema
+        }
+    }
+    else
+    {
+        await db.Database.EnsureCreatedAsync();
+    }
 }
 
 // OpenAPI Specification & Scalar Interactive Documentation
