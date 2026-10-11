@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ops-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__PostgresConnection
+        sync: false
+      - key: AI__Provider
+        value: Gemini
+      - key: AI__ApiKey
+        sync: false

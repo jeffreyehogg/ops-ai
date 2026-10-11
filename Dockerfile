@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 
 # Copy solution and project definitions for optimized layer caching
-COPY OpsAI.sln* Directory.Build.props ./
+COPY OpsAI.sln Directory.Build.props ./
 COPY src/OpsAI.Core/OpsAI.Core.csproj src/OpsAI.Core/
 COPY src/OpsAI.Infrastructure/OpsAI.Infrastructure.csproj src/OpsAI.Infrastructure/
 COPY src/OpsAI.Api/OpsAI.Api.csproj src/OpsAI.Api/

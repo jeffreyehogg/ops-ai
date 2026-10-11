@@ -16,6 +16,12 @@ public class OpsAIDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        if (Database.IsNpgsql())
+        {
+            modelBuilder.HasDefaultSchema("opsai");
+        }
+
         modelBuilder.ApplyConfiguration(new IncidentConfiguration());
         modelBuilder.ApplyConfiguration(new TriageResultConfiguration());
     }
